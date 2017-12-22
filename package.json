@@ -1,0 +1,14 @@
+{
+  "name": "botan",
+  "description": "botan",
+  "version": "1.0",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "axios": "^0.17.1",
+    "express": "^4.16.2",
+    "redis": "^2.8.0",
+    "technicalindicators": "^1.0.21"
+  }
+}
