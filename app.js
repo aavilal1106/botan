@@ -1,6 +1,6 @@
 var express = require('express');
 var http = require('http');
-var botan = require('./botan');
+var botan = require('./botan-spread');
 var app = express();
 var server = http.createServer(app);
 app.set('port', process.env.PORT || 4000);
