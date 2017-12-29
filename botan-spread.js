@@ -21,10 +21,9 @@ module.exports = {
     tick();
 
     function tick() {
-      axios.get('https://api.bitso.com/v3/ticker/')
+      axios.get('https://api.bitso.com/v3/ticker/?book=' + book)
     	.then(function (response) {
-        console.log('PP', response.data.payload);
-        bot(response.data.payload[3]);
+        bot(response.data.payload);
         //var payload = response.data.payload;
         //console.log(' ASK: ', response.data.payload.ask, ' BID: ', response.data.payload.bid, ' DIFF: ', response.data.payload.ask - response.data.payload.bid);
         setTimeout(function() {
@@ -32,7 +31,7 @@ module.exports = {
         }, 500);
     	})
     	.catch(function(error) {
-    		console.log('ERROR', error);
+    		console.log('ERROR');
         setTimeout(function() {
           tick();
         }, 500);
@@ -40,9 +39,7 @@ module.exports = {
     }
     function bot(payload) {
       var spread = payload.ask - payload.bid;
-      console.log((new Date()).getTime() + ' - ' + spread);
       if (spread <= max_spread) {
-        console.log('AF', ask_first, 'AL', ask_last, 'OP', op_type);
         if (pair_spread == false) {
           pair_spread = true;
           if (ask_first == 0) {
@@ -66,9 +63,10 @@ module.exports = {
           //close buy
           if (op_type == 'BUY' && op_price != 0) {
             op_profit = op_price - payload.bid;
-            op_result = profit > 0 ? 'PROFIT' : profit < 0 ? 'LOST' : 'DRAW';
-            txt_order = count + ';' + op_type + ';' + op_date + ';' + op_price + ';' + payload.created_at + ';' + payload.bid + ';' + op_result + ';' + profit;
+            op_result = op_profit > 0 ? 'PROFIT' : op_profit < 0 ? 'LOST' : 'DRAW';
+            txt_order = count + ';' + op_type + ';' + op_date + ';' + op_price + ';' + payload.created_at + ';' + payload.bid + ';' + op_result + ';' + op_profit;
             write_order(txt_order);
+            op_price = 0;
             if (op_result == 'PROFIT') {
                 op_type = op_type == 'BUY' ? 'SELL' : 'BUY';
             }
@@ -76,9 +74,10 @@ module.exports = {
           //close sell
           if (op_type == 'SELL' && op_price != 0) {
             op_profit = op_price - payload.ask;
-            op_result = profit > 0 ? 'PROFIT' : profit < 0 ? 'LOST' : 'DRAW';
-            txt_order = count + ';' + op_type + ';' + op_date + ';' + op_price + ';' + payload.created_at + ';' + payload.bid + ';' + op_result + ';' + profit;
+            op_result = op_profit > 0 ? 'PROFIT' : op_profit < 0 ? 'LOST' : 'DRAW';
+            txt_order = count + ';' + op_type + ';' + op_date + ';' + op_price + ';' + payload.created_at + ';' + payload.bid + ';' + op_result + ';' + op_profit;
             write_order(txt_order);
+            op_price = 0;
             if (op_result == 'PROFIT') {
                 op_type = op_type == 'BUY' ? 'SELL' : 'BUY';
             }
@@ -104,7 +103,7 @@ module.exports = {
 
     function write_order(txt) {
       console.log(txt);
-      fs.appendFile('orders.log',txt, function(err) {
+      fs.appendFile('orders.log',('\n'+ txt), function(err) {
           if(err) {
               return console.log(err);
           }
